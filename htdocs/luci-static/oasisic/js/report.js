@@ -1,6 +1,6 @@
 /*!
  * luci-theme-oasisic — 系统健康报告
- * v1.0.0
+ * v1.0.1
  * 一键生成系统状态 PDF 报告（打印到 PDF）
  */
 
@@ -86,7 +86,7 @@ var OasisicReport = (function() {
 
     // Footer
     win.document.write('<div style="margin-top:30px;color:#c7c7cc;font-size:11px;text-align:center;">');
-    win.document.write('luci-theme-oasisic v1.0.0 · Oasisic OpenWrt</div>');
+    win.document.write('luci-theme-oasisic v1.0.1 · Oasisic OpenWrt</div>');
 
     win.document.write('</body></html>');
     win.document.close();

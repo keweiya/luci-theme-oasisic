@@ -10,7 +10,7 @@ LUCI_DESCRIPTION:=Apple-inspired minimal design with bypass gateway awareness, N
 LUCI_DEPENDS:=+luci-base
 
 PKG_NAME:=luci-theme-oasisic
-PKG_VERSION:=1.0.0
+PKG_VERSION:=1.0.1
 PKG_RELEASE:=1
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
@@ -52,9 +52,9 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/www/luci-static/resources
 	$(CP) ./htdocs/luci-static/resources/*.js $(1)/www/luci-static/resources/
 
-	# ucode 模板（主题视图路径）
-	$(INSTALL_DIR) $(1)/usr/share/ucode/luci/view/themes/oasisic
-	$(CP) ./ucode/template/themes/oasisic/* $(1)/usr/share/ucode/luci/view/themes/oasisic/
+	# ucode 模板（LuCI 24.10 runtime 从 /usr/share/ucode/luci/template/ 查找主题模板）
+	$(INSTALL_DIR) $(1)/usr/share/ucode/luci/template/themes/oasisic
+	$(CP) ./ucode/template/themes/oasisic/* $(1)/usr/share/ucode/luci/template/themes/oasisic/
 
 	# 壁纸代理控制器
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/oasisic

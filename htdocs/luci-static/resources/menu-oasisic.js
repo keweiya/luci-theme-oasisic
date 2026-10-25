@@ -2,63 +2,77 @@
 'require baseclass';
 'require ui';
 
-return L.Class.extend({
-	__init__: function() {
-		var menuEl = document.getElementById('oasisicMenu');
-		if (!menuEl) return;
-		this.renderMenu(menuEl);
+/* luci-theme-oasisic — 侧边栏菜单渲染
+ * 参考 themes/luci-theme-bootstrap 的 menu-bootstrap.js：
+ * 使用 LuCI 标准的 ui.menu.load() 获取菜单树，
+ * 渲染到 header.ut 中的 #oasisicMenu 容器。 */
+
+return baseclass.extend({
+	__init__() {
+		ui.menu.load().then(L.bind(this.render, this));
 	},
 
-	renderMenu: function(container) {
-		var self = this;
-		L.system('/cgi-bin/luci/admin/menu', null, function(jsondata) {
-			try {
-				var data = JSON.parse(jsondata);
-				if (data && data.menu) {
-					self.buildMenu(container, data.menu);
-				}
-			} catch(e) {
-				// Fallback: try ubus call
-				L.ubus('luci', 'get_menu', {}, function(r) {
-					if (r && r.menu) self.buildMenu(container, r.menu);
-				});
-			}
-		});
-	},
+	render(tree) {
+		const container = document.getElementById('oasisicMenu');
+		if (!container)
+			return;
 
-	buildMenu: function(container, items) {
-		if (!items || !items.length) return;
-		var html = '';
-		var currentPath = window.location.pathname;
-		var priority = { 'status': 1, 'network': 2, 'services': 3, 'system': 999 };
-		items.sort(function(a, b) {
-			var pa = priority[a.module] || 50;
-			var pb = priority[b.module] || 50;
-			return pa - pb;
-		});
-		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-			if (!item.title) continue;
-			if (!item.children && item.target === 'firstchild') continue;
-			var isActive = item.module ? currentPath.indexOf('/' + item.module) > -1 : false;
-			html += '<li class="oasisic-nav-item' + (isActive ? ' active' : '') + '">';
-			var url = item.path || '#' + item.module;
-			html += '<a href="' + L.url(url) + '" class="oasisic-nav-link">';
-			html += '<span class="oasisic-nav-label">' + L._(item.title) + '</span>';
-			html += '</a>';
-			if (item.children && item.children.length) {
-				html += '<ul class="oasisic-nav-submenu">';
-				for (var j = 0; j < item.children.length; j++) {
-					var child = item.children[j];
-					if (!child.title) continue;
-					var childActive = child.module ? currentPath.indexOf('/' + child.module) > -1 : false;
-					var childUrl = child.path || (item.module + '/' + child.module);
-					html += '<li class="oasisic-nav-subitem"><a href="' + L.url(childUrl) + '" class="oasisic-nav-sublink' + (childActive ? ' active' : '') + '">' + L._(child.title) + '</a></li>';
-				}
-				html += '</ul>';
+		const root = (tree && tree.children)
+			? (tree.children.admin ?? Object.values(tree.children)[0])
+			: null;
+		if (!root)
+			return;
+
+		const path = L.env.dispatchpath ?? [];
+		const idx = path.indexOf('admin');
+		const activeTop = (idx >= 0) ? path[idx + 1] : null;
+		const activeSub = (idx >= 0) ? path[idx + 2] : null;
+
+		/* #oasisicMenu 本身就是 ul.oasisic-nav-list，直接追加 li */
+		for (const child of ui.menu.getChildren(root)) {
+			const isActive = (child.name == activeTop);
+
+			const li = E('li', {
+				'class': 'oasisic-nav-item' + (isActive ? ' active' : '')
+			}, [
+				E('a', {
+					'class': 'oasisic-nav-link',
+					'href': L.url('admin', child.name)
+				}, [
+					E('span', { 'class': 'oasisic-nav-label' }, [ _(child.title) ])
+				])
+			]);
+
+			if (isActive) {
+				const sub = this.renderSubMenu(child, activeSub);
+				if (sub)
+					li.appendChild(sub);
 			}
-			html += '</li>';
+
+			container.appendChild(li);
 		}
-		container.innerHTML = html;
+	},
+
+	renderSubMenu(node, activeSub) {
+		const children = ui.menu.getChildren(node);
+		if (children.length == 0)
+			return null;
+
+		const ul = E('ul', { 'class': 'oasisic-nav-submenu' });
+
+		for (const child of children) {
+			const isActive = (child.name == activeSub);
+
+			ul.appendChild(E('li', {
+				'class': 'oasisic-nav-subitem' + (isActive ? ' active' : '')
+			}, [
+				E('a', {
+					'class': 'oasisic-nav-sublink',
+					'href': L.url('admin', node.name, child.name)
+				}, [ _(child.title) ])
+			]));
+		}
+
+		return ul;
 	}
 });

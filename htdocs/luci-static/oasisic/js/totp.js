@@ -1,6 +1,6 @@
 /*!
  * luci-theme-oasisic — TOTP 两步验证
- * v1.0.0
+ * v1.0.1
  */
 
 var OasisicTOTP = (function() {

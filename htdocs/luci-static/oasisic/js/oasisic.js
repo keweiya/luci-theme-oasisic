@@ -1,5 +1,5 @@
 /*!
- * luci-theme-oasisic v1.0.0 — Core JavaScript
+ * luci-theme-oasisic v1.0.1 — Core JavaScript
  * Oasisic OpenWrt
  * Licensed under Apache 2.0
  */
@@ -8,7 +8,7 @@ var Oasisic = (function() {
   'use strict';
 
   var theme = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'oasisic',
     sidebarCollapsed: false,
     darkMode: false,

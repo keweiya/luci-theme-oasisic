@@ -1,6 +1,6 @@
 /*!
  * luci-theme-oasisic — Dashboard
- * v1.0.0
+ * v1.0.1
  * Nikki real-time status polling + auto-refresh
  */
 

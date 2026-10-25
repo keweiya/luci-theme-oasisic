@@ -1,6 +1,6 @@
 /*!
  * luci-theme-oasisic — Login page
- * v1.0.0
+ * v1.0.1
  * Handles Bing wallpaper loading
  */
 

@@ -1,0 +1,80 @@
+{#
+	luci-theme-oasisic v1.0.1 — Login page
+	Oasisic OpenWrt
+	Licensed under Apache 2.0
+-#}
+
+{% include('themes/oasisic/header_login') %}
+
+{%
+	let boardinfo = ubus.call('system', 'board');
+-%}
+
+			<div class="oasisic-login-card">
+				<div class="oasisic-login-brand">
+					<div class="oasisic-login-logo">
+						<svg viewBox="0 0 32 32" width="30" height="30" fill="none">
+							<rect x="2" y="2" width="28" height="28" rx="7" fill="#3b82f6"/>
+							<path d="M10 16l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</div>
+					<div class="oasisic-login-brand-name">{{ striptags(boardinfo?.hostname ?? 'OpenWrt') }}</div>
+				</div>
+
+				<h1 class="oasisic-login-title">{{ _('Authorization Required') }}</h1>
+
+				{% if (fuser): %}
+				<div class="oasisic-login-error">
+					{{ _('Invalid username and/or password! Please try again.') }}
+				</div>
+				{% endif %}
+
+				<form class="oasisic-login-form" method="post" autocomplete="on">
+					<div class="oasisic-login-field">
+						<input type="text" id="luci_username" name="luci_username"
+							autocomplete="username" placeholder="{{ _('Username') }}"
+							value="{{ entityencode(duser ?? '', true) }}">
+					</div>
+					<div class="oasisic-login-field">
+						<input type="password" id="luci_password" name="luci_password"
+							autocomplete="current-password" placeholder="{{ _('Password') }}">
+					</div>
+					<button type="submit" class="oasisic-login-btn">{{ _('Log in') }}</button>
+				</form>
+
+				<div class="oasisic-login-hint">{{ _('Please enter your username and password.') }}</div>
+				<div class="oasisic-login-ver">luci-theme-oasisic v1.0.1</div>
+			</div>
+
+{%
+	let https_ports = uci.get('uhttpd', 'main', 'listen_https') ?? [];
+
+	https_ports = uniq(filter(
+		map(
+			(type(https_ports) == 'string') ? split(https_ports, /\s+/) : https_ports,
+			e => +match(e, /\d+$/)?.[0]
+		),
+		p => (p >= 0 && p <= 65535)
+	));
+-%}
+
+<script>
+	var input = document.getElementsByName('luci_password')[0];
+
+	if (input)
+		input.focus();
+
+	if (document.location.protocol != 'https:') {
+		{{ https_ports }}.forEach(function(port) {
+			var url = 'https://' + window.location.hostname + ':' + port + window.location.pathname;
+			var img = new Image();
+
+			img.onload = function() { window.location = url };
+			img.src = 'https://' + window.location.hostname + ':' + port + '{{ resource }}/icons/loading.svg?' + Math.random();
+
+			setTimeout(function() { img.src = '' }, 5000);
+		});
+	}
+</script>
+
+{% include('themes/oasisic/footer_login') %}
